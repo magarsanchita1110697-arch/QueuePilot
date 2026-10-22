@@ -1,0 +1,42 @@
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Java and Maven
+target/
+*.class
+*.jar
+*.war
+hs_err_pid*
+replay_pid*
+
+# Node.js and frontend builds
+node_modules/
+dist/
+build/
+.npm/
+*.tsbuildinfo
+coverage/
+
+# Local environment configuration and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+
+# Logs
+*.log
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+
+# Local caches and temporary files
+.cache/
+.tmp/
+temp/
