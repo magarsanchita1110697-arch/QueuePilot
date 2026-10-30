@@ -32,6 +32,10 @@ public class Job {
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private Map<String, Object> payload = new HashMap<>();
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "result", columnDefinition = "jsonb")
+    private Map<String, Object> result;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private JobStatus status = JobStatus.QUEUED;
@@ -93,12 +97,48 @@ public class Job {
     public Instant getScheduledAt() { return scheduledAt; }
     public Instant getStartedAt() { return startedAt; }
     public Instant getFinishedAt() { return finishedAt; }
+    public Map<String, Object> getResult() {
+    return result;
+}
 
-    public void setJobType(String jobType) { this.jobType = jobType; }
-    public void setPayload(Map<String, Object> payload) { this.payload = payload; }
-    public void setStatus(JobStatus status) { this.status = status; }
-    public void setAttemptCount(int attemptCount) { this.attemptCount = attemptCount; }
-    public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
-    public void setLastError(String lastError) { this.lastError = lastError; }
+   public void setJobType(String jobType) {
+    this.jobType = jobType;
+}
+
+public void setPayload(Map<String, Object> payload) {
+    this.payload = payload;
+}
+
+public void setStatus(JobStatus status) {
+    this.status = status;
+}
+
+public void setAttemptCount(int attemptCount) {
+    this.attemptCount = attemptCount;
+}
+
+public void setMaxAttempts(int maxAttempts) {
+    this.maxAttempts = maxAttempts;
+}
+
+public void setLastError(String lastError) {
+    this.lastError = lastError;
+}
+
+public void setResult(Map<String, Object> result) {
+    this.result = result;
+}
+
+public void setStartedAt(Instant startedAt) {
+    this.startedAt = startedAt;
+}
+
+public void setFinishedAt(Instant finishedAt) {
+    this.finishedAt = finishedAt;
+}
+
+public void setScheduledAt(Instant scheduledAt) {
+    this.scheduledAt = scheduledAt;
+}
 }
 
