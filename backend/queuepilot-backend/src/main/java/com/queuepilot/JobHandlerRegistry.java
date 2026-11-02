@@ -23,13 +23,11 @@ public class JobHandlerRegistry {
         }
     }
 
-    public JobHandler getHandler(String jobType) {
+       public JobHandler getHandler(String jobType) {
         JobHandler handler = handlers.get(jobType);
 
         if (handler == null) {
-            throw new IllegalArgumentException(
-                    "Unsupported job type: " + jobType
-            );
+            throw new UnsupportedJobTypeException(jobType);
         }
 
         return handler;
