@@ -49,6 +49,34 @@ public class JobResultService {
         jobRepository.save(job);
         jobAttemptRepository.save(attempt);
     }
+    @Transactional
+    public void completeNonRetryableFailure(
+            UUID jobId,
+            int attemptNumber,
+            String errorMessage) {
+
+        Instant now = Instant.now();
+
+        Job job = findJob(jobId);
+        JobAttempt attempt = findAttempt(jobId, attemptNumber);
+
+        validateRunning(job, attempt);
+
+        String error = (errorMessage == null || errorMessage.isBlank())
+                ? "Job execution failed"
+                : errorMessage;
+
+        attempt.setStatus(JobAttemptStatus.FAILED);
+        attempt.setFinishedAt(now);
+        attempt.setErrorMessage(error);
+
+        job.setLastError(error);
+        job.setStatus(JobStatus.FAILED);
+        job.setFinishedAt(now);
+
+        jobRepository.save(job);
+        jobAttemptRepository.save(attempt);
+    }
 
     @Transactional
     public void completeFailure(
