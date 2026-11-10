@@ -48,6 +48,24 @@ public class JobWorker {
 
             result = handler.execute(job.getPayload());
 
+                
+                } catch (UnsupportedJobTypeException exception) {
+
+            logger.error(
+                    "Job {} has unsupported job type {}",
+                    job.getId(),
+                    job.getJobType(),
+                    exception
+            );
+
+            jobResultService.completeNonRetryableFailure(
+                    job.getId(),
+                    attemptNumber,
+                    exception.getMessage()
+            );
+
+            return;
+
         } catch (Exception exception) {
 
             logger.error(
