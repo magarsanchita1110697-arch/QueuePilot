@@ -3,6 +3,7 @@ package com.queuepilot;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -124,21 +125,17 @@ public class JobResultService {
                         )
                 );
     }
-
-    private JobAttempt findAttempt(UUID jobId, int attemptNumber) {
+    
+       private JobAttempt findAttempt(UUID jobId, int attemptNumber) {
         return jobAttemptRepository
-                .findByJobIdOrderByAttemptNumberAsc(jobId)
-                .stream()
-                .filter(attempt ->
-                        attempt.getAttemptNumber() == attemptNumber
-                )
-                .findFirst()
+                .findByJobIdAndAttemptNumber(jobId, attemptNumber)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Job attempt not found: " + attemptNumber
                         )
                 );
     }
+
 
    private void validateRunning(Job job, JobAttempt attempt) {
     if (job.getStatus() != JobStatus.RUNNING
