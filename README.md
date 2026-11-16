@@ -98,25 +98,24 @@ The general processing workflow is:
 
 This workflow allows job execution to operate independently of the original API request.
 
+
 ## 6. Concurrency and Job Claiming
 
-A key backend engineering challenge in job processing systems is ensuring that multiple workers do not execute the same job simultaneously.
+QueuePilot uses PostgreSQL row-level locking to handle job claiming when multiple background workers are running.
 
-QueuePilot addresses this using PostgreSQL row-level locking.
+The job selection logic is implemented in `JobRepository`. It retrieves jobs that are ready for execution, including jobs with `QUEUED` or `RETRY_WAIT` status whose scheduled execution time has arrived.
 
-The job repository uses:
+To avoid multiple workers claiming the same job, the repository query uses PostgreSQL's `FOR UPDATE SKIP LOCKED` clause.
 
-```sql
-FOR UPDATE SKIP LOCKED
-```
+Here's what it does:
 
-The query selects eligible jobs while locking the selected database rows within a transaction.
+- `FOR UPDATE` locks the selected row within the current transaction.
+- `SKIP LOCKED` skips rows that are already locked by another transaction instead of waiting for them.
 
-The `SKIP LOCKED` behavior allows concurrent workers to skip jobs already locked by another transaction and claim other eligible jobs instead.
+For example, when one worker locks a job, another worker can skip that job and select a different eligible job.
 
-This approach improves the safety of concurrent job claiming and helps avoid duplicate claims during parallel processing.
+This allows multiple workers to claim jobs concurrently without competing for the same locked database row.
 
-Jobs are selected according to their scheduled execution time.
 
 ## 7. Failure Handling and Retry Management
 
