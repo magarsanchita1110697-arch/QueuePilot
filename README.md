@@ -1,330 +1,112 @@
-# QueuePilot — Backend Job Processing & Orchestration System
+# QueuePilot — AI-Enhanced Job Queue Management System
 
-**QueuePilot** is a backend job processing system built using Java, Spring Boot, and PostgreSQL. It provides a structured mechanism for submitting jobs, processing them asynchronously through background workers, tracking execution attempts, and handling failures through retry-aware scheduling.
+QueuePilot is a full-stack job orchestration platform for submitting background tasks, processing them asynchronously, and tracking job status, results, and execution history.
 
-The project explores backend engineering concepts such as asynchronous processing, database transactions, concurrent job execution, persistence, and reliable failure handling.
+**Stack:** React · TypeScript · Vite · Java 21 · Spring Boot · Spring Data JPA · PostgreSQL · Flyway · Maven
 
-**Project Status:** In Progress
+**Project status:** Core backend job processing is implemented and being refined. The React dashboard and end-to-end integration are in progress. AWS deployment and AI features are planned.
 
-## 1. Overview
+## Overview
 
-In backend applications, certain operations can take significant time to complete. Executing these operations directly within an HTTP request can increase response times and negatively affect application responsiveness.
+QueuePilot separates job submission from execution. Jobs are persisted in PostgreSQL and processed by background workers. The planned product extends this core with a web dashboard, AWS hosting, and AI-assisted job intelligence.
 
-QueuePilot addresses this problem by separating job submission from job execution.
+## Current Implementation
 
-Instead of performing a task immediately when a request arrives, the application stores the job in PostgreSQL. A background worker retrieves eligible jobs and processes them independently of the original request.
+- REST APIs for job submission and retrieval.
+- PostgreSQL persistence for jobs, execution attempts, statuses, schedules, and results.
+- Background worker and handler registry, with an uppercase-text handler as the first example job type.
+- Transactional job claiming with PostgreSQL `FOR UPDATE SKIP LOCKED`, allowing concurrent workers to skip already-locked jobs and claim other eligible jobs.
+- Execution-attempt tracking and retry-aware failure handling.
+- Flyway database migrations and Spring Boot/JUnit tests.
 
-The system also maintains execution-attempt records and supports retry-aware scheduling to handle processing failures.
-
-## 2. Key Features
-
-- **RESTful Job Management:** Provides backend APIs for submitting jobs and managing job information and execution status.
-- **Asynchronous Processing:** Executes submitted jobs through a background worker rather than blocking the request-processing flow.
-- **Scheduled Job Execution:** Retrieves jobs that are eligible for execution based on their scheduled time.
-- **Concurrency-Safe Job Claiming:** Uses PostgreSQL transactions and `FOR UPDATE SKIP LOCKED` to prevent multiple workers from claiming the same job simultaneously.
-- **Retry-Aware Scheduling:** Supports scheduling failed jobs for subsequent execution attempts.
-- **Execution Attempt Tracking:** Maintains individual records for job execution attempts, including attempt numbers and statuses.
-- **Job Result Management:** Stores processing results and maintains job execution information.
-- **Extensible Handler Architecture:** Uses a handler registry to associate job types with their respective processing implementations.
-- **Database Versioning:** Uses Flyway migrations to manage database schema changes.
-- **Automated Testing:** Includes tests for application and repository-level functionality.
-
-## 3. Technology Stack
-
-| Category | Technologies |
-|---|---|
-| Programming Language | Java |
-| Backend Framework | Spring Boot |
-| Data Access | Spring Data JPA |
-| Database | PostgreSQL |
-| Database Migrations | Flyway |
-| Build Tool | Maven |
-| Testing | JUnit, Spring Boot Test |
-| Version Control | Git, GitHub |
-
-## 4. System Architecture
-
-QueuePilot follows a layered backend architecture that separates API handling, job claiming, job execution, and database operations.
-
-### High-Level Architecture
+## System Architecture
 
 ![QueuePilot System Architecture](docs/system-architecture.jpeg)
 
-### Architecture Components
+## Job Execution Lifecycle
 
-**1. JobController**
-
-Handles incoming HTTP requests related to job management and communicates with the backend services.
-
-**2. JobRepository**
-
-Manages job persistence and provides database queries for retrieving eligible jobs.
-
-**3. JobClaimService**
-
-Responsible for claiming eligible jobs while using transactional database operations to ensure safe job claiming.
-
-**4. JobWorker**
-
-Processes eligible jobs in the background and coordinates execution using the registered job handlers.
-
-**5. JobHandlerRegistry**
-
-Maintains the mapping between supported job types and their corresponding processing implementations.
-
-**6. JobResultService**
-
-Handles job execution results and the associated processing information.
-
-**7. JobAttemptRepository**
-
-Provides persistence and retrieval operations for individual execution-attempt records.
-
-## 5. Job Processing Lifecycle
-
-QueuePilot separates job submission from background execution.
-
-The general processing workflow is:
 ![QueuePilot Job Execution Lifecycle](docs/job-lifecycle.jpeg)
 
-1. **Job Submission:** A client submits a job through the REST API.
-2. **Job Persistence:** The submitted job is stored in PostgreSQL with its initial status.
-3. **Job Selection:** The background worker identifies jobs eligible for execution.
-4. **Job Claiming:** The job claim service retrieves and claims an eligible job using transactional database locking.
-5. **Handler Resolution:** The handler registry identifies the appropriate handler based on the job type.
-6. **Job Execution:** The worker executes the selected job handler.
-7. **Result Management:** The processing result and execution-attempt information are persisted.
-8. **Failure Handling:** When processing fails, retry-aware scheduling determines whether another execution attempt should be scheduled.
+## Planned Roadmap
 
-This workflow allows job execution to operate independently of the original API request.
+### Full-Stack Dashboard
+
+- Complete the React dashboard and connect it to the backend APIs.
+- Provide a user interface to submit jobs and view their status, results, and execution history.
+
+### AWS Deployment
+
+- Host the React frontend using **Amazon S3** and **CloudFront**.
+- Deploy the Spring Boot API on **Amazon EC2**.
+- Use **Amazon RDS for PostgreSQL** for managed database hosting.
+- Apply **IAM** least-privilege access, private networking, HTTPS, and protected configuration with **AWS Secrets Manager** or environment-based secrets.
+- Use **Amazon CloudWatch** for application logs and infrastructure monitoring.
+
+### AI-Assisted Job Intelligence
+
+- Add **LLM-based job classification**: analyse a natural-language job description and suggest a task category, with backend validation before the category is accepted.
+- Explore **AI-assisted failure analysis** using job-attempt history and available diagnostic information to explain failures and surface useful job insights.
+
+### Reliability and Scalability
+
+- Evaluate **Amazon SQS** or **Redis** for queueing and coordination needs.
+- Explore dead-letter handling, idempotent execution, worker scaling, structured logging, and performance testing under concurrent workloads.
+
+> Roadmap items describe the intended direction of the project; they are not presented as completed features.
+
+## Technology Stack
+
+| Area | Technologies |
+|---|---|
+| Frontend | React, TypeScript, Vite |
+| Backend | Java 21, Spring Boot, Spring Data JPA |
+| Database | PostgreSQL, Flyway |
+| Build and testing | Maven, JUnit, Spring Boot Test |
+| Cloud (planned) | AWS S3, CloudFront, EC2, RDS, IAM, Secrets Manager, CloudWatch |
+| AI (planned) | LLM API / language-model integration |
+
+## Run the Backend Locally
+
+**Prerequisites:** JDK 21, Maven, PostgreSQL, and Git.
+
+1. **Clone the repository and open the backend directory:**
+
+   git clone https://github.com/magarsanchita1110697-arch/QueuePilot.git
+   cd QueuePilot/backend/queuepilot-backend
+
+2. **Create the PostgreSQL role and database.** Run these SQL statements in a PostgreSQL session (for example, through `psql` as a database administrator or pgAdmin). Replace `your_password` with your own password:
+
+ 
+   CREATE ROLE queuepilot_user WITH LOGIN PASSWORD 'your_password';
+   CREATE DATABASE queuepilot OWNER queuepilot_user;
+   
+
+3. **Set the database password in Ubuntu/WSL.** Run this in the same terminal session you will use to start the backend:
+
+   
+   export QUEUEPILOT_DB_PASSWORD='your_password'
+   
+
+4. **Run the tests:**
+
+   mvn clean test
+  
+
+5. **Start the backend:**
+
+   mvn spring-boot:run
 
 
-## 6. Concurrency and Job Claiming
-
-QueuePilot uses PostgreSQL row-level locking to handle job claiming when multiple background workers are running.
-
-The job selection logic is implemented in `JobRepository`. It retrieves jobs that are ready for execution, including jobs with `QUEUED` or `RETRY_WAIT` status whose scheduled execution time has arrived.
-
-To avoid multiple workers claiming the same job, the repository query uses PostgreSQL's `FOR UPDATE SKIP LOCKED` clause.
-
-Here's what it does:
-
-- `FOR UPDATE` locks the selected row within the current transaction.
-- `SKIP LOCKED` skips rows that are already locked by another transaction instead of waiting for them.
-
-For example, when one worker locks a job, another worker can skip that job and select a different eligible job.
-
-This allows multiple workers to claim jobs concurrently without competing for the same locked database row.
-
-
-## 7. Failure Handling and Retry Management
-
-Job execution can fail because of processing errors or other runtime issues.
-
-QueuePilot incorporates retry-aware scheduling to handle these failures.
-
-The system:
-
-- Maintains individual execution-attempt records.
-- Associates attempts with their corresponding jobs.
-- Tracks attempt numbers and execution statuses.
-- Supports retry scheduling for jobs that can be executed again.
-- Maintains job execution results.
-
-This provides a structured way to track execution history and manage failures rather than treating every job as a one-time operation.
-
-## 8. Database Design
-
-QueuePilot uses PostgreSQL for persistent storage.
-
-The database design separates job information from individual execution attempts.
-
-### Jobs
-
-Stores the primary job records and associated processing information.
-
-### Job Attempts
-
-Stores individual execution-attempt records associated with a job.
-
-This separation allows the system to maintain an execution history independently of the primary job record.
-
-### Database Migrations
-
-Flyway manages database schema changes through version-controlled migration scripts.
-
-Current migrations:
-
-- `V1__create_jobs_tables.sql` — Creates the initial job-related database tables.
-- `V2__add_job_result.sql` — Introduces job result persistence.
-
-Hibernate automatic schema generation is disabled, keeping database structure management under Flyway migrations.
-
-## 9. API Layer
-
-QueuePilot exposes its job management functionality through REST APIs.
-
-The current backend includes:
-
-- Job submission through `CreateJobRequest`.
-- Job management through `JobController`.
-- Persistence and retrieval through `JobRepository`.
-- Background processing through `JobWorker`.
-
-The exact endpoint mappings and request fields are maintained in the corresponding controller and request classes.
-
-## 10. Project Structure
+## Repository Structure
 
 ```text
 QueuePilot/
-|
-└── backend/
-    └── queuepilot-backend/
-        |
-        ├── src/
-        │   ├── main/
-        │   │   ├── java/com/queuepilot/
-        │   │   │   ├── CreateJobRequest.java
-        │   │   │   ├── HealthController.java
-        │   │   │   ├── Job.java
-        │   │   │   ├── JobAttempt.java
-        │   │   │   ├── JobAttemptRepository.java
-        │   │   │   ├── JobAttemptStatus.java
-        │   │   │   ├── JobClaimService.java
-        │   │   │   ├── JobController.java
-        │   │   │   ├── JobHandler.java
-        │   │   │   ├── JobHandlerRegistry.java
-        │   │   │   ├── JobRepository.java
-        │   │   │   ├── JobResultService.java
-        │   │   │   ├── JobStatus.java
-        │   │   │   ├── JobWorker.java
-        │   │   │   ├── UppercaseTextJobHandler.java
-        │   │   │   └── QueuepilotBackendApplication.java
-        │   │   │
-        │   │   └── resources/
-        │   │       ├── application.properties
-        │   │       └── db/migration/
-        │   │
-        │   └── test/
-        │       └── java/com/queuepilot/
-        │           └── QueuepilotBackendApplicationTests.java
-        │
-        └── pom.xml
+├── backend/    # Spring Boot backend
+├── frontend/   # React and Vite dashboard
+├── docs/       # Architecture and lifecycle diagrams
+└── README.md
 ```
 
-## 11. Running the Project Locally
+## Goals
 
-### Prerequisites
-
-- Java Development Kit (JDK 21)
-- Maven
-- PostgreSQL
-- Git
-
-### Step 1: Clone the Repository
-
-```bash
-git clone https://github.com/magarsanchita1110697-arch/QueuePilot.git
-
-cd QueuePilot
-```
-
-### Step 2: Navigate to the Backend
-
-```bash
-cd backend/queuepilot-backend
-```
-
-### Step 3: Configure PostgreSQL
-
-Create a PostgreSQL database and user:
-
-```sql
-CREATE ROLE queuepilot_user
-WITH LOGIN PASSWORD 'your_password';
-
-CREATE DATABASE queuepilot
-OWNER queuepilot_user;
-```
-
-### Step 4: Configure Environment Variable
-
-Set the database password as an environment variable.
-
-On Ubuntu / WSL:
-
-```bash
-export QUEUEPILOT_DB_PASSWORD='your_password'
-```
-
-The application uses the following database configuration:
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/queuepilot
-
-spring.datasource.username=queuepilot_user
-
-spring.datasource.password=${QUEUEPILOT_DB_PASSWORD}
-```
-
-Do not commit actual database credentials to GitHub.
-
-### Step 5: Build and Run Tests
-
-```bash
-mvn clean test
-```
-
-### Step 6: Start the Application
-
-```bash
-mvn spring-boot:run
-```
-
-Flyway manages the database migrations when the application starts.
-
-## 12. Testing
-
-QueuePilot includes automated backend tests using JUnit and Spring Boot Test.
-
-The tests cover application-level and repository-level behavior.
-
-Run the test suite using:
-
-```bash
-mvn test
-```
-
-## 13. Future Enhancements
-
-The following improvements are planned as the project evolves:
-
-- Redis integration for improved job scheduling and coordination.
-- AWS-based deployment and cloud infrastructure integration.
-- React-based dashboard for monitoring jobs and execution history.
-- LLM integration for intelligent failure analysis and job insights.
-- Improved monitoring, logging, and observability.
-- Additional job handlers and configurable job types.
-- Performance evaluation under concurrent workloads.
-
-These enhancements are part of the future development roadmap and are not represented as completed features.
-
-## 14. Project Goals
-
-QueuePilot is being developed to explore practical backend engineering concepts, including:
-
-- Asynchronous job processing.
-- Database transactions and concurrency control.
-- Background worker architecture.
-- Retry mechanisms and failure handling.
-- REST API development.
-- Database persistence and schema migration.
-- Modular and extensible application design.
-
-The goal is to build a reliable, maintainable, and extensible backend job processing system while gaining practical experience with real-world backend engineering challenges.
-
----
-
-**Project:** QueuePilot  
-**Status:** In Progress  
-**Repository:** https://github.com/magarsanchita1110697-arch/QueuePilot
+Build a maintainable job orchestration platform that demonstrates backend engineering, full-stack development, cloud deployment, reliable asynchronous processing, and practical AI integration.
